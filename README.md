@@ -1,25 +1,35 @@
 # 16-bit Virtual Machine
 
-> Building a custom 16-bit Virtual Machine from scratch in C, starting with an assembler and gradually expanding into a complete CPU emulator.
+> A custom 16-bit Virtual Machine built entirely in C, featuring a custom Instruction Set Architecture (ISA), assembler, binary encoder, and CPU emulator.
+
+---
 
 ## Overview
 
-This project is an ongoing implementation of a custom 16-bit Virtual Machine (VM) written in C. The primary objective is to gain a deeper understanding of computer architecture, instruction set design, binary encoding, and low-level systems programming by building every component from the ground up.
+This project explores the fundamentals of computer architecture by implementing a complete instruction execution pipeline from scratch.
 
-The project is being developed incrementally. The current milestone focuses on implementing the assembler, which translates human-readable assembly instructions into binary machine code.
+Instead of relying on an existing architecture such as ARM or RISC-V, this project defines a custom Instruction Set Architecture (ISA), develops an assembler to translate assembly code into machine code, and implements a virtual CPU capable of executing the generated instructions.
+
+The project is designed as a long-term educational project and will continue to evolve with additional CPU features, memory management, branching, stack operations, and debugging tools.
 
 ---
 
 ## Current Features
 
-### Implemented
+### Assembler
 
-- Custom assembly instruction parser
-- Opcode generation
-- Register encoding
-- Immediate value encoding
-- Binary instruction generation
-- Binary (`.bin`) file output
+- Parses custom assembly language
+- Converts instructions into 16-bit machine code
+- Generates executable binary (`code.bin`)
+- Supports register and immediate operands
+
+### CPU Emulator
+
+- Loads binary machine code
+- Decodes instructions
+- Executes instructions sequentially
+- Simulates a register file
+- Displays register contents after execution
 
 ---
 
@@ -27,75 +37,72 @@ The project is being developed incrementally. The current milestone focuses on i
 
 | Instruction | Description |
 |------------|-------------|
-| `MOV` | Move immediate value or register value |
-| `ADD` | Add register or immediate value |
-| `SUB` | Subtract register or immediate value |
+| MOV | Move data |
+| ADD | Addition |
+| SUB | Subtraction |
+| AND | Bitwise AND |
+| OR | Bitwise OR |
+| XOR | Bitwise XOR |
+| NOT | Bitwise NOT |
+| INC | Increment |
+| DEC | Decrement |
 
 ---
 
-## Register Set
+## Register File
 
-The current architecture supports four general-purpose registers.
+The virtual CPU currently provides:
 
-| Register | Binary Encoding |
-|----------|-----------------|
-| R0 | 00 |
-| R1 | 01 |
-| R2 | 10 |
-| R3 | 11 |
-
----
-
-## Immediate Values
-
-The current instruction format supports immediate values ranging from:
+- **32 General Purpose Registers**
+- Registers are named:
 
 ```
-0 - 7
+R0 - R31
 ```
 
 ---
 
-## Example Assembly Program
+## Instruction Format
+
+Each instruction occupies **16 bits**.
+
+```
++-------------+-----------+-----------+-----------+
+| Opcode (5)  | Dest (5)  | I (1)     | Source(5) |
++-------------+-----------+-----------+-----------+
+```
+
+| Field | Description |
+|--------|-------------|
+| Opcode | Operation to perform |
+| Destination | Destination register |
+| Immediate Flag | Indicates register/immediate operand |
+| Source | Source register or immediate value |
+
+---
+
+## Example Program
 
 ```asm
-MOV R0,5
-MOV R2,2
-MOV R3,R1
-ADD R1,R2
-ADD R3,4
+MOV R0,1
+MOV R12,2
+ADD R1,R0
+ADD R1,R12
+INC R3
 ```
 
-The assembler converts these instructions into compact binary machine code stored in a `.bin` file.
-
----
-
-## Instruction Encoding
-
-Each instruction is currently encoded into a single byte using the following format:
-
-```
-+--------+--------+-----+--------+
-| Opcode | Dest   | Imm | Source |
-| 2 bits | 2 bits |1 bit| 3 bits |
-+--------+--------+-----+--------+
-```
-
-Where:
-
-- **Opcode** identifies the instruction.
-- **Destination** specifies the destination register.
-- **Immediate Flag** determines whether the source operand is an immediate value or a register.
-- **Source** stores either the source register or the immediate value.
+Assembly source is translated into machine code and executed by the virtual CPU.
 
 ---
 
 ## Project Structure
 
 ```
-.
+16-bit-virtual-machine
+│
 ├── assembler.c
 ├── assembler_functions.c
+├── binary.c
 ├── code.txt
 ├── code.bin
 └── README.md
@@ -103,73 +110,112 @@ Where:
 
 ---
 
-## Building
+## How It Works
 
-Compile the project using GCC.
+```
+Assembly Source
+       │
+       ▼
++----------------+
+|   Assembler    |
++----------------+
+       │
+       ▼
+16-bit Machine Code
+       │
+       ▼
++----------------+
+|  CPU Emulator  |
++----------------+
+       │
+       ▼
+Instruction Decode
+       │
+       ▼
+Execute on Registers
+```
+
+---
+
+## Build
+
+Compile the assembler
 
 ```bash
 gcc assembler.c -o assembler
 ```
 
-Run the assembler.
+Run the assembler
 
 ```bash
 ./assembler
 ```
 
-The generated machine code will be written to:
+Compile the emulator
 
+```bash
+gcc binary.c -o vm
 ```
-code.bin
+
+Run the virtual machine
+
+```bash
+./vm
 ```
 
 ---
 
 ## Current Limitations
 
-This is the first milestone of the project. At the moment:
+This project is still under active development.
 
-- Only three instructions are supported (`MOV`, `ADD`, `SUB`).
-- Only four registers (`R0`–`R3`) are available.
-- Immediate values are limited to **0–7**.
-- Labels and branching are not yet implemented.
-- No CPU execution or instruction simulation is currently available.
+Current limitations include:
+
+- No RAM implementation
+- No Program Counter abstraction
+- No stack support
+- No branching or jump instructions
+- No labels or symbol table
+- No function calls
+- No interrupts
+- No debugger
 
 ---
 
 ## Roadmap
 
-### Phase 1 — Assembler ✅
+### Phase 1 — Instruction Set
+
+- [x] Custom ISA
+- [x] 16-bit instruction encoding
+
+### Phase 2 — Assembler
 
 - [x] Assembly parser
-- [x] Opcode generation
-- [x] Register encoding
-- [x] Immediate value encoding
-- [x] Binary file generation
+- [x] Binary generation
 
-### Phase 2 — CPU Emulator
+### Phase 3 — CPU Emulator
 
-- [ ] Binary loader
-- [ ] Instruction decoder
-- [ ] Register execution
-- [ ] Program Counter
-- [ ] Execution loop
+- [x] Binary loader
+- [x] Instruction decoder
+- [x] Register execution
+- [x] Arithmetic operations
+- [x] Logical operations
 
-### Phase 3 — Memory System
+### Phase 4 — Memory
 
-- [ ] RAM implementation
-- [ ] Load and Store instructions
-- [ ] Memory addressing
+- [ ] RAM
+- [ ] Load/Store instructions
+- [ ] Addressing modes
 
-### Phase 4 — ISA Expansion
+### Phase 5 — Control Flow
 
-- [ ] Logical instructions
-- [ ] Branch instructions
-- [ ] Shift operations
-- [ ] Comparison instructions
-- [ ] Additional arithmetic operations
+- [ ] JMP
+- [ ] CMP
+- [ ] Conditional branches
+- [ ] Loops
 
-### Phase 5 — Stack Support
+### Phase 6 — Stack
 
 - [ ] Stack Pointer
 - [ ] PUSH
@@ -177,16 +223,31 @@ This is the first milestone of the project. At the moment:
 - [ ] CALL
 - [ ] RET
 
+### Phase 7 — Advanced Features
+
+- [ ] Debugger
+- [ ] Labels
+- [ ] Symbol table
+- [ ] Memory-mapped I/O
+- [ ] Interrupt handling
+
 ---
 
 ## Motivation
 
-Most modern programming languages abstract away how processors execute instructions. This project explores the complete software execution pipeline by manually implementing an instruction set, assembler, binary encoding, and eventually a CPU emulator.
+Modern software development often abstracts away the underlying hardware. This project aims to bridge that gap by implementing a complete software-based processor from the ground up.
 
-The long-term goal is to build an educational 16-bit virtual architecture that demonstrates how software interacts with hardware at the lowest level.
+The objective is to gain practical experience in:
+
+- Instruction Set Architecture (ISA) Design
+- Computer Architecture
+- Binary Encoding
+- CPU Design
+- Low-Level Programming
+- Systems Programming
 
 ---
 
-## Future Work
+## Future Goals
 
-This assembler is the first component of a larger virtual machine ecosystem. Future updates will introduce a CPU emulator capable of loading and executing the generated machine code, followed by memory management, stack support, branching instructions, and an expanded instruction set.
+The long-term vision is to transform this project into a modular educational virtual computer inspired by real-world processor architectures. Planned enhancements include memory management, control flow instructions, stack operations, debugging capabilities, and a richer instruction set while maintaining a clean and extensible design.
