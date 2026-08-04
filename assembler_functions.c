@@ -2,7 +2,6 @@
 #include<string.h>
 #include<inttypes.h>
 
-
 FILE *src, *dest;
 
 void read_data_from_file_convert_to_binary(){
@@ -11,13 +10,13 @@ void read_data_from_file_convert_to_binary(){
     
     while(fgets(buff,sizeof(buff),src)!=NULL){
 
-        char inst[10];
-        char des[3];
+        char inst[5];
+        char des[4];
         char sc[4];
 
-        uint8_t opcode;
-        uint8_t dest_reg;
-        uint8_t src_reg;
+        uint8_t opcode=0;
+        uint8_t dest_reg = 0;
+        uint8_t src_reg = 0;
         uint8_t immediate_flag = 0;
 
         int i=0;
@@ -41,7 +40,8 @@ void read_data_from_file_convert_to_binary(){
             des_index++;
         }
         des[des_index] = '\0';
-        i++;
+
+        if (buff[i] == ',') i++;
 
         printf("Destination Register: %s\n",des);
 
@@ -50,7 +50,6 @@ void read_data_from_file_convert_to_binary(){
             i++;
             sc_index++;
         }
-
         sc[sc_index] = '\0';
 
         printf("Source Register: %s\n",sc);
@@ -58,74 +57,54 @@ void read_data_from_file_convert_to_binary(){
         // binary for instruction
 
         if(strcmp(inst,"MOV")==0){
-            opcode = 00; 
+            opcode = 1; 
         }
         else if(strcmp(inst,"ADD")==0){
-            opcode = 01;
+            opcode = 2;
         }
         else if(strcmp(inst,"SUB")==0){
-            opcode = 02;
+            opcode = 3;
+        }
+        else if(strcmp(inst,"AND")==0){
+            opcode = 4;
+        }
+        else if(strcmp(inst,"OR")==0){
+            opcode = 5;
+        }
+        else if(strcmp(inst,"XOR")==0){
+            opcode = 6;
+        }
+        else if(strcmp(inst,"NOT")==0){
+            opcode = 7;
+        }
+        else if(strcmp(inst,"INC")==0){
+            opcode = 8;
+        }
+        else if(strcmp(inst,"DEC")==0){
+            opcode = 9;
+        }
+        else if(strcmp(inst,"EQ")==0){
+            opcode = 10;
+        }
+        
+        for(int i=0;des[i]!='\0';i++){
+            if(des[i]>='0' && des[i]<='9'){
+                int digit = des[i] - '0';
+                dest_reg = dest_reg * 10 + digit;
+            }
         }
 
-        // binary for Destination Register
-
-        if(strcmp(des,"R0")==0){
-            dest_reg = 00;
-        }
-        else if(strcmp(des,"R1")==0){
-            dest_reg = 01;
-        }
-        else if(strcmp(des,"R2")==0){
-            dest_reg = 02;
-        }
-        else if(strcmp(des,"R3")==0){
-            dest_reg = 03;
+        for(int i=0;sc[i]!='\0';i++){
+            if(sc[i]>='A' && sc[i]<='Z'){
+                immediate_flag = 1;
+            }
+            else if(sc[i]>='0' && sc[i]<='9'){
+                int digit = sc[i] - '0';
+                src_reg = src_reg * 10 + digit;
+            }
         }
 
-        // binary for Source Register
-
-        if(sc[0]=='R'){
-            immediate_flag = 1;
-        }
-
-        if(strcmp(sc,"00")==0){
-            src_reg = 00;
-        }
-        else if(strcmp(sc,"1")==0){
-            src_reg = 01;
-        }
-        else if(strcmp(sc,"2")==0){
-            src_reg = 02;
-        }
-        else if(strcmp(sc,"3")==0){
-            src_reg = 03;
-        }
-        else if(strcmp(sc,"4")==0){
-            src_reg = 04;
-        }
-        else if(strcmp(sc,"5")==0){
-            src_reg = 05;
-        }
-        else if(strcmp(sc,"6")==0){
-            src_reg = 06;
-        }
-        else if(strcmp(sc,"7")==0){
-            src_reg = 07;
-        }
-        else if(strcmp(sc,"R0")==0){
-            src_reg = 00;
-        }
-        else if(strcmp(sc,"R1")==0){
-            src_reg = 01;
-        }
-        else if(strcmp(sc,"R2")==0){
-            src_reg = 02;
-        }
-        else if(strcmp(sc,"R3")==0){
-            src_reg = 03;
-        }
-
-        uint8_t final_bit = (opcode << 6) | (dest_reg << 4) | (immediate_flag << 3) | (src_reg);
+        uint16_t final_bit = (opcode << 11) | (dest_reg << 6) | (immediate_flag << 5) | (src_reg);
 
         fwrite(&final_bit,sizeof(final_bit),1,dest);
 
