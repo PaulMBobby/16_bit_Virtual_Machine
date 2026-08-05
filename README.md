@@ -1,156 +1,41 @@
-# 16-bit Virtual Machine
+# 16-Bit Virtual Machine & CPU Emulator
 
-A custom 16-bit virtual machine implemented in C, consisting of an assembler and a CPU emulator built around a custom instruction set architecture (ISA). The project demonstrates the complete execution pipeline, from translating assembly source into machine code to executing binary instructions on a software-defined processor.
+A software-based 16-bit virtual machine written in C, featuring a custom instruction set, assembler, binary instruction encoding, simulated registers and memory, and a fetch-decode-execute execution cycle.
 
----
+> **Status:** Active development
 
 ## Overview
 
-This project implements the core components of a simple processor architecture entirely in software.
+This project implements a simple 16-bit processor architecture entirely in software.
 
-The assembler parses a custom assembly language and generates a binary executable using a fixed-width 16-bit instruction format. The virtual machine loads the generated binary into memory, decodes each instruction, updates the processor state, and executes the program sequentially.
+The project consists of two main components:
 
-The objective is to build each architectural component from first principles while maintaining a modular design that can be extended as the instruction set evolves.
+1. **Assembler** – Parses assembly instructions and converts them into 16-bit binary machine instructions.
+2. **Virtual CPU** – Loads the binary instruction stream into simulated code memory, decodes each instruction, and executes it using a register file, program counter, status register, and data memory.
 
----
-
-## Features
-
-### Assembler
-
-- Parses custom assembly source files
-- Encodes instructions into a 16-bit machine instruction format
-- Supports both register and immediate operands
-- Generates executable binary output (`code.bin`)
-
-### Virtual Machine
-
-- Loads machine code into virtual memory
-- Sequential instruction fetch and decode
-- Software implementation of a program counter (PC)
-- 32 general-purpose registers (`R0`–`R31`)
-- Status register for processor flags
-- Instruction execution engine
+The project was developed to explore instruction set design, binary encoding, CPU execution, memory organization, and low-level programming in C.
 
 ---
 
-## Supported Instructions
+## Architecture
 
-| Instruction | Description |
-|------------|-------------|
-| MOV | Move register or immediate value |
-| ADD | Addition |
-| SUB | Subtraction |
-| AND | Bitwise AND |
-| OR | Bitwise OR |
-| XOR | Bitwise XOR |
-| NOT | Bitwise NOT |
-| INC | Increment register |
-| DEC | Decrement register |
-| EQ | Compare two registers and update the status register |
+The virtual processor consists of:
 
----
+- **Word Size:** 16 bits
+- **Registers:** 32 × 16-bit general-purpose registers
+- **Program Counter (PC):** 16-bit
+- **Status Register:** 8-bit
+- **Code Memory:** 32,768 × 16-bit words
+- **Data Memory:** 32,768 × 16-bit words
+- **Instruction Width:** 16 bits
 
-## Processor Architecture
+### Instruction Format
 
-### Register File
+Each instruction is encoded into a fixed-width 16-bit word:
 
-- 32 General Purpose Registers
-- Register names: `R0` – `R31`
-
-### Memory
-
-- 65,536 words of virtual memory
-
-### Program Counter
-
-- Sequential instruction execution using a software program counter.
-
-### Status Register
-
-The processor maintains an 8-bit status register used to store condition flags generated during instruction execution.
-
----
-
-## Instruction Format
-
-Each instruction occupies 16 bits.
-
-```
- 15                     0
-+-------+------+---+------+
-|Opcode | Dest | I | Src  |
-+-------+------+---+------+
-   5        5    1    5
-```
-
-| Field | Size |
-|--------|-----:|
-| Opcode | 5 bits |
-| Destination Register | 5 bits |
-| Immediate Flag | 1 bit |
-| Source Register / Immediate | 5 bits |
-
----
-
-## Example Program
-
-```asm
-MOV R0,1
-MOV R12,2
-
-ADD R1,R0
-ADD R1,R12
-
-INC R3
-
-EQ R0,R3
-```
-
----
-
-## Project Structure
-
-```
-.
-├── assembler.c
-├── assembler_functions.c
-├── vm.c
-├── program.txt
-├── code.bin
-└── README.md
-```
-
----
-
-## Build
-
-Compile the assembler
-
-```bash
-gcc assembler.c -o assembler
-```
-
-Generate machine code
-
-```bash
-./assembler
-```
-
-Compile the virtual machine
-
-```bash
-gcc vm.c -o vm
-```
-
-Execute the program
-
-```bash
-./vm
-```
-
----
-
-## Design Goals
-
-The implementation emphasizes simplicity, modularity, and explicit control over each stage of instruction execution. Rather than relying on existing processor architectures, the project defines its own instruction set and execution model, making each component—from instruction encoding to register manipulation and memory access—fully transparent and independently extensible.
+```text
+15                 11 10        6 5         0
++-------------------+------------+-+---------+
+|      Opcode       | Dest Reg   |I| Operand |
++-------------------+------------+-+---------+
+       5 bits            5 bits   1   5 bits
